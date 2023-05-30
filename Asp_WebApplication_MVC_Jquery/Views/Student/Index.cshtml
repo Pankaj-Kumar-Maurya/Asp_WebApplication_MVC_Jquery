@@ -1,0 +1,161 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+<head>
+    <style>
+        #tbldisplay {
+            border: 1px solid black;
+        }
+
+            #tbldisplay th,
+            #tbldisplay td {
+                border: 1px solid black;
+                padding: 5px;
+            }
+    </style>
+</head>
+<table>
+    <tr>
+        <th>Name</th>
+        <td><input type="text" id="txtname" /></td>
+
+    </tr>
+    <tr>
+        <th>Address</th>
+        <td><input type="text" id="txtaddress" /></td>
+    </tr>
+    <tr>
+        <th>Age</th>
+        <td><input type="text" id="txtage" /></td>
+    </tr>
+    <tr>
+        <td><input type="button" id="btnsave" value="Save" onclick="INSERT()" /></td>
+    </tr>
+</table>
+<table id="tbldisplay" border="1">
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Address</th>
+        <th>Age</th>
+    </tr>
+
+</table>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script type="text/javascript">
+
+    var Globel_Id = 0;
+
+    $(document).ready(function () {
+        Show();
+    });
+    function INSERT() {
+        if ($("#btnsave").val() == "Save") {
+            $.ajax({
+                url: 'Student/StudentInsert',
+                type: 'post',
+                data: { _name: $("#txtname").val(), _address: $("#txtaddress").val(), _age: $("#txtage").val() },
+                success: function () {
+
+                    Show();
+                    Clear();
+                },
+                error: function () {
+                    alert("NOt insert");
+                }
+
+            });
+
+        }
+        else {
+            $.ajax({
+                url: 'Student/StudentUpdate',
+                type: 'post',
+
+                data: { _id: Globel_Id, _name: $("#txtname").val(), _address: $("#txtaddress").val(), _age: $("#txtage").val() },
+                success: function () {
+
+                    Show();
+                    Clear();
+                },
+                error: function () {
+                    alert("Data Not Updated ");
+                }
+            });
+        }
+       
+    }
+
+    function Show() {
+        $.ajax({
+            url: 'Student/Display',
+            type: 'post',
+            data: { },
+           
+            success: function (data) {
+                data = JSON.parse(data);
+                $("#tbldisplay").find("tr:gt(0)").remove();
+                for (var i = 0; i < data.length; i++) {
+                    $("#tbldisplay").append('<tr> <td>' + data[i].id + '</td>  <td>' + data[i].name + '</td> <td>' + data[i].address + '</td> <td>' + data[i].age + '</td>   <td><input type="button" id="btndelete" value="Delete" onclick="DELETE(' + data[i].id + ')" /></td>  <td><input type="button" id="btnedit" value="Edit" onclick="EDIT(' + data[i].id +')" /></td>  </tr>');
+                }
+            },
+            error: function () {
+                alert("NOt Display");
+            }
+
+        });
+    }
+
+    function DELETE(id) {
+        $.ajax({
+            url: 'Student/StudentDelete',
+            type: 'post',
+            
+            data: {_id:id },
+            success: function () {
+
+                Show();
+               
+
+            },
+            error: function () {
+                alert("Data Not deleted ");
+            }
+        });
+    }
+
+    function EDIT(id) {
+        $.ajax({
+            url: 'Student/EditStudent',
+            type: 'post',
+            
+            data: {_id:+ id },
+            success: function (data) {
+                data = JSON.parse(data);//data = JSON.parse(data.d); //if we use asp.net web application not mvc
+                // alert(data[0].name); //use for testing to confirm data is coming or not 
+                $("#txtname").val(data[0].name);
+                $("#txtaddress").val(data[0].address);
+                $("#txtage").val(data[0].age);
+                $("#btnsave").val("Update");
+                Globel_Id = id;
+
+
+            },
+            error: function () {
+                alert("Data Not edited ");
+            }
+        });
+    }
+
+    function Clear() {
+        $("#txtname").val('');
+        $("#txtaddress").val('');
+        $("#txtage").val('');
+        $("#btnsave").val("Save");
+        Globel_Id = 0;
+    }
+
+
+</script>
+
